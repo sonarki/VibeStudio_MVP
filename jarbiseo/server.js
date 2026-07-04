@@ -50,6 +50,17 @@ const MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-6';
 const MAX_HISTORY_TURNS = 24;
 const MAX_FILE_BYTES = 256 * 1024; // /api/file read cap
 
+// --- ElevenLabs TTS (Phase 2 goal #2; browser speechSynthesis is the fallback)
+const ELEVEN_KEY = process.env.ELEVENLABS_API_KEY;
+const ELEVEN_MODEL = process.env.ELEVENLABS_MODEL || 'eleven_multilingual_v2';
+const MAX_TTS_CHARS = 2000;
+// Three female premade voices offered alongside the captain's own 엘리시아 voice
+const PRESET_FEMALE_VOICES = [
+  { voice_id: 'EXAVITQu4vr4xnSDxMaL', label: '사라 — 차분하고 부드러운 여성' },
+  { voice_id: 'pFZP5JQG7iQjIQuC4Bku', label: '릴리 — 따뜻하고 낮은 톤의 여성' },
+  { voice_id: '9BWtsMINqrJLrRacOk9x', label: '아리아 — 밝고 생기 있는 여성' },
+];
+
 // Absolute, normalized whitelist roots for /api/file (and the scan itself)
 const WHITELIST_ROOTS = (config.scanPaths || [])
   .map((p) => path.resolve(p))
@@ -241,6 +252,92 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
+// List the 4 selectable ElevenLabs voices: 엘리시아 (found by name in the
+// captain's account) + the three female presets.
+let voicesCache = { at: 0, data: null };
+app.get('/api/voices', async (_req, res) => {
+  if (!ELEVEN_KEY) return res.json({ enabled: false, voices: [] });
+  if (voicesCache.data && Date.now() - voicesCache.at < 10 * 60 * 1000) {
+    return res.json(voicesCache.data);
+  }
+
+  let account = [];
+  try {
+    const r = await fetch('https://api.elevenlabs.io/v1/voices', {
+      headers: { 'xi-api-key': ELEVEN_KEY },
+    });
+    if (r.ok) account = (await r.json()).voices || [];
+    else console.warn('[voices] ElevenLabs list failed:', r.status);
+  } catch (err) {
+    console.warn('[voices]', err.message);
+  }
+
+  const list = [];
+  const elysia = account.find((v) => /엘리시아|elysia/i.test(v.name || ''));
+  if (elysia) list.push({ id: elysia.voice_id, label: `${elysia.name} · 캡틴의 보이스` });
+
+  for (const p of PRESET_FEMALE_VOICES) {
+    // Include presets we can confirm in the account — or all of them when the
+    // account list could not be fetched (they still work for TTS calls).
+    if (account.length === 0 || account.some((v) => v.voice_id === p.voice_id)) {
+      list.push({ id: p.voice_id, label: p.label });
+    }
+  }
+  // Pad with other female voices from the account if some presets were missing
+  for (const v of account) {
+    if (list.length >= 4) break;
+    if (list.some((x) => x.id === v.voice_id)) continue;
+    if (((v.labels && v.labels.gender) || '').toLowerCase() === 'female') {
+      list.push({ id: v.voice_id, label: v.name });
+    }
+  }
+
+  const data = { enabled: true, elysiaFound: !!elysia, voices: list };
+  voicesCache = { at: Date.now(), data };
+  res.json(data);
+});
+
+// Generate speech via ElevenLabs; the browser falls back to speechSynthesis
+// whenever this endpoint errors.
+app.post('/api/tts', async (req, res) => {
+  if (!ELEVEN_KEY) {
+    return res.status(503).json({ error: '서버에 ELEVENLABS_API_KEY가 설정되어 있지 않습니다.' });
+  }
+  const text = req.body && req.body.text;
+  const voiceId = req.body && req.body.voiceId;
+  if (!text || typeof text !== 'string' || text.length > MAX_TTS_CHARS) {
+    return res.status(400).json({ error: `유효한 text가 필요합니다 (최대 ${MAX_TTS_CHARS}자).` });
+  }
+  if (!/^[A-Za-z0-9]{10,40}$/.test(voiceId || '')) {
+    return res.status(400).json({ error: '유효한 voiceId가 필요합니다.' });
+  }
+
+  try {
+    const r = await fetch(
+      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`,
+      {
+        method: 'POST',
+        headers: { 'xi-api-key': ELEVEN_KEY, 'content-type': 'application/json' },
+        body: JSON.stringify({
+          text,
+          model_id: ELEVEN_MODEL,
+          voice_settings: { stability: 0.5, similarity_boost: 0.75 },
+        }),
+      }
+    );
+    if (!r.ok) {
+      const detail = await r.text();
+      console.error('[tts] ElevenLabs error:', r.status, detail.slice(0, 300));
+      return res.status(502).json({ error: 'ElevenLabs 음성 생성에 실패했습니다.' });
+    }
+    res.set('content-type', 'audio/mpeg');
+    res.send(Buffer.from(await r.arrayBuffer()));
+  } catch (err) {
+    console.error('[tts]', err);
+    res.status(502).json({ error: 'ElevenLabs 서버에 연결하지 못했습니다.' });
+  }
+});
+
 app.get('/api/file', async (req, res) => {
   const requested = req.query.path;
   if (!requested || typeof requested !== 'string') {
@@ -292,5 +389,8 @@ app.listen(PORT, () => {
   }
   if (!process.env.ANTHROPIC_API_KEY) {
     console.warn('  WARNING: ANTHROPIC_API_KEY is not set — /api/chat will return an error. Create .env from .env.example.');
+  }
+  if (!ELEVEN_KEY) {
+    console.log('  ElevenLabs: key not set — using browser speechSynthesis for TTS.');
   }
 });

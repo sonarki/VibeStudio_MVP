@@ -763,7 +763,7 @@ $('micBtn').addEventListener('click', () => {
   if (!recognition) { addBubble('system', '이 브라우저는 음성 인식을 지원하지 않습니다. (Chrome 권장)'); return; }
   handsFree = !handsFree;
   if (handsFree) {
-    window.speechSynthesis.cancel(); // don't listen to our own TTS
+    stopSpeaking(); // don't listen to our own TTS
     ttsSpeaking = false;
     try { recognition.start(); } catch (_) {}
     addBubble('system', '상시 청취 모드를 켰습니다. 마이크 버튼을 다시 누르면 꺼집니다.');
@@ -781,34 +781,65 @@ $('micBtn').addEventListener('click', () => {
 
 const voiceStatus = new Map(); // voiceURI -> 'ok' | 'bad'
 let voices = [];
-const PREFERRED_VOICE = /선히|sunhi/i; // captain's pinned voice
-const TTS_RATE = 1.33; // ~30% faster than the previous 1.02
+const PREFERRED_VOICE = /선히|sunhi/i; // pinned browser voice (fallback mode)
+const TTS_RATE = 1.33; // browser TTS: ~30% faster
+const AUDIO_RATE = 1.1; // ElevenLabs audio: slight speed-up, natural pitch kept
 let currentUtterance = null; // global ref — Chrome GC kills onend on locals
+let currentAudio = null;     // playing ElevenLabs audio element
 let ttsPoll = null;
+let elTts = { enabled: false, voices: [] }; // from GET /api/voices
+
+async function loadElVoices() {
+  try {
+    const res = await fetch('/api/voices');
+    elTts = await res.json();
+  } catch (_) {
+    elTts = { enabled: false, voices: [] };
+  }
+  refreshVoices();
+  if (elTts.enabled && elTts.elysiaFound === false) {
+    addBubble('system', 'ElevenLabs 계정에서 "엘리시아" 이름의 음성을 찾지 못했습니다. 계정에 엘리시아 보이스를 만들어 두시면 자동으로 목록에 추가됩니다.');
+  }
+}
 
 function refreshVoices() {
   voices = window.speechSynthesis.getVoices();
   const sel = $('voiceSelect');
+  const saved = localStorage.getItem('jarbiseo_voice') || '';
   const prev = sel.value;
   sel.innerHTML = '';
 
-  // Korean voices first, then the rest
+  // ElevenLabs voices first — 엘리시아 + the three female presets
+  for (const v of elTts.voices || []) {
+    const opt = document.createElement('option');
+    opt.value = 'el:' + v.id;
+    opt.textContent = '🎙 ' + v.label;
+    sel.appendChild(opt);
+  }
+
+  // Browser voices as fallback group (Korean first)
   const sorted = [...voices].sort((a, b) => {
     const ak = a.lang.startsWith('ko') ? 0 : 1;
     const bk = b.lang.startsWith('ko') ? 0 : 1;
     return ak - bk || a.name.localeCompare(b.name);
   });
-
+  const group = document.createElement('optgroup');
+  group.label = '브라우저 기본 음성';
   for (const v of sorted) {
     const opt = document.createElement('option');
     opt.value = v.voiceURI;
     const mark = voiceStatus.get(v.voiceURI) === 'ok' ? ' ✓' : voiceStatus.get(v.voiceURI) === 'bad' ? ' ✕' : '';
     opt.textContent = `${v.name} (${v.lang})${mark}`;
-    sel.appendChild(opt);
+    group.appendChild(opt);
   }
+  if (sorted.length) sel.appendChild(group);
+
+  const has = (val) => val && [...sel.options].some((o) => o.value === val);
   const preferred = sorted.find((v) => PREFERRED_VOICE.test(v.name) && voiceStatus.get(v.voiceURI) !== 'bad');
-  if (prev && [...sel.options].some((o) => o.value === prev)) sel.value = prev;
-  else if (preferred) sel.value = preferred.voiceURI; // pin 선히 by default
+  if (has(saved)) sel.value = saved;              // captain's remembered choice
+  else if (has(prev)) sel.value = prev;
+  else if (elTts.voices && elTts.voices.length) sel.value = 'el:' + elTts.voices[0].id; // 엘리시아 first
+  else if (preferred) sel.value = preferred.voiceURI;
   else {
     const ko = sorted.find((v) => v.lang.startsWith('ko') && voiceStatus.get(v.voiceURI) !== 'bad');
     if (ko) sel.value = ko.voiceURI;
@@ -816,6 +847,9 @@ function refreshVoices() {
 }
 window.speechSynthesis.onvoiceschanged = refreshVoices;
 refreshVoices();
+$('voiceSelect').addEventListener('change', () => {
+  localStorage.setItem('jarbiseo_voice', $('voiceSelect').value);
+});
 
 // Called whenever TTS finishes (or fails) — reopens the mic in hands-free mode
 function ttsDone() {
@@ -825,17 +859,67 @@ function ttsDone() {
   if (handsFree) restartRecognition(400); // small gap so we don't hear our own tail
 }
 
-function speak(text) {
-  if (!window.speechSynthesis || !text) return;
+function stopSpeaking() {
   window.speechSynthesis.cancel();
+  if (currentAudio) { try { currentAudio.pause(); } catch (_) {} currentAudio = null; }
+  if (ttsPoll) { clearInterval(ttsPoll); ttsPoll = null; }
+}
+
+// Entry point: ElevenLabs voice when selected, browser TTS otherwise/on failure
+async function speak(text) {
+  if (!text) return;
+  stopSpeaking();
 
   // Pause STT so JARBISEO doesn't transcribe its own voice
   ttsSpeaking = true;
   if (handsFree && recognition) { try { recognition.abort(); } catch (_) {} }
 
+  const selVal = $('voiceSelect').value || '';
+  if (selVal.startsWith('el:')) {
+    if (await speakEleven(text, selVal.slice(3))) return;
+    // ElevenLabs unavailable (quota, network, key) → browser voice below
+  }
+  speakBrowser(text);
+}
+
+async function speakEleven(text, voiceId) {
+  try {
+    const res = await fetch('/api/tts', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ text, voiceId }),
+    });
+    if (!res.ok) throw new Error('tts http ' + res.status);
+    const url = URL.createObjectURL(await res.blob());
+    const audio = new Audio(url);
+    currentAudio = audio;
+    audio.playbackRate = AUDIO_RATE;
+    const done = () => {
+      URL.revokeObjectURL(url);
+      if (currentAudio === audio) currentAudio = null;
+      ttsDone();
+    };
+    audio.onended = done;
+    audio.onerror = done;
+    await audio.play();
+    return true;
+  } catch (err) {
+    console.warn('ElevenLabs TTS failed → browser voice fallback:', err);
+    return false;
+  }
+}
+
+function speakBrowser(text) {
+  if (!window.speechSynthesis) { ttsDone(); return; }
+
   const utter = new SpeechSynthesisUtterance(text);
   currentUtterance = utter;
-  const chosen = voices.find((v) => v.voiceURI === $('voiceSelect').value);
+  // Selected value may be an ElevenLabs id (fallback path) — then pick the
+  // pinned/first healthy Korean browser voice instead.
+  const selVal = $('voiceSelect').value || '';
+  const chosen = voices.find((v) => v.voiceURI === selVal)
+    || voices.find((v) => PREFERRED_VOICE.test(v.name) && voiceStatus.get(v.voiceURI) !== 'bad')
+    || voices.find((v) => v.lang.startsWith('ko') && voiceStatus.get(v.voiceURI) !== 'bad');
   if (chosen) { utter.voice = chosen; utter.lang = chosen.lang; }
   else utter.lang = 'ko-KR';
   utter.rate = TTS_RATE;
@@ -935,6 +1019,7 @@ $('screenBtn').addEventListener('click', async () => {
    -------------------------------------------------------------------------- */
 
 loadBrain();
+loadElVoices();
 addBubble('assistant', '캡틴 님, 자비서 온라인입니다. 무엇을 도와드릴까요?');
 </script>
 </body>

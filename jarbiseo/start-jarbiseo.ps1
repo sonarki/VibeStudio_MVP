@@ -136,6 +136,19 @@ if (-not (Test-Path (Join-Path $PSScriptRoot '.env'))) {
     Write-Host '  저장 완료. (.env 파일은 절대 다른 사람과 공유하지 마세요)'
 }
 
+# --- 4b. Optional ElevenLabs key for high-quality voices (asked once) ---------
+$envFile = Join-Path $PSScriptRoot '.env'
+$envText = Get-Content $envFile -Raw
+if ($envText -notmatch 'ELEVENLABS_API_KEY') {
+    Write-Host ''
+    Write-Host '  (선택) ElevenLabs API 키가 있으면 훨씬 자연스러운 음성을 쓸 수 있습니다.'
+    Write-Host '  https://elevenlabs.io 로그인 -> 우측 상단 프로필 -> API Keys 에서 발급.'
+    $elKey = (Read-Host '  ElevenLabs API 키를 붙여넣고 Enter (없으면 그냥 Enter)').Trim()
+    Add-Content -Path $envFile -Value "ELEVENLABS_API_KEY=$elKey" -Encoding ASCII
+    if ($elKey) { Write-Host '  저장 완료. 엘리시아 음성이 활성화됩니다.' }
+    else { Write-Host '  건너뜁니다. (나중에 .env 파일에 ELEVENLABS_API_KEY=... 를 추가하면 됩니다)' }
+}
+
 # --- 5. Launch ---------------------------------------------------------------
 # Open the browser a moment after the server has had time to boot.
 Start-Process powershell -WindowStyle Hidden -ArgumentList '-NoProfile', '-Command', "Start-Sleep 2; Start-Process 'http://localhost:3800'"
