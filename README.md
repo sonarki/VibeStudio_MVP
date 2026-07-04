@@ -28,6 +28,20 @@ export REPLICATE_API_TOKEN=...
 1) Generate Image → 2) Animate to Video → 3) LipSync with voice  
 Keep each step independent; cache files in `outputs/`.
 
+## Doc Node Map (local server)
+Scan a documents folder and auto-build an interactive node map
+(folders + documents + markdown cross-links). 100% local — nothing leaves
+your machine.
+
+```bash
+export DOCS_DIR=~/Documents   # optional (defaults to ~/Documents, else CWD)
+python server.py              # → http://localhost:8765/
+```
+
+- `GET /` — interactive graph (self-contained HTML, no CDN)
+- `GET /api/nodemap?path=...&max_nodes=800` — graph as JSON
+- Also embedded in the Streamlit app as the **🗺 Doc Map** tab.
+
 ## Known limits (be honest)
 - Stubs simulate motion & I/O only.
 - Real quality depends on the model endpoints you attach.

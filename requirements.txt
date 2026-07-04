@@ -4,3 +4,5 @@ imageio==2.36.0
 ffmpeg-python==0.2.0
 numpy==1.26.4
 requests==2.32.3
+fastapi==0.115.6
+uvicorn==0.32.1

@@ -40,7 +40,7 @@ st.session_state.setdefault("last_video_path", None)
 st.session_state.setdefault("last_audio_path", None)
 
 # ---------- Tabs ----------
-tab_img, tab_vid, tab_lip = st.tabs(["🖼 Image", "🎥 Motion", "👄 LipSync"])
+tab_img, tab_vid, tab_lip, tab_map = st.tabs(["🖼 Image", "🎥 Motion", "👄 LipSync", "🗺 Doc Map"])
 
 # ----------------- Image Tab -----------------
 with tab_img:
@@ -145,6 +145,37 @@ with tab_lip:
         st.write("Stub complete. Replace this block with SadTalker/Wav2Lip integration.")
         if st.session_state["last_video_path"]:
             st.video(st.session_state["last_video_path"])
+
+# ----------------- Doc Map Tab -----------------
+with tab_map:
+    st.subheader("🗺 Document Folder → Node Map")
+    st.caption("Scan a local folder and auto-build a graph: folders + documents, "
+               "with markdown cross-links. Also available as a standalone server: "
+               "`python server.py` → http://localhost:8765/")
+    default_dir = os.environ.get("DOCS_DIR") or os.path.expanduser("~/Documents")
+    if not os.path.isdir(default_dir):
+        default_dir = os.getcwd()
+    folder = st.text_input("Folder to scan", value=default_dir)
+    max_nodes = st.slider("Max nodes", 50, 2000, 800, step=50)
+
+    if st.button("Scan & Build Node Map"):
+        import streamlit.components.v1 as components
+        from docmap.scanner import scan_folder
+        from docmap.viz import render_html
+        try:
+            nm = scan_folder(folder, max_nodes=max_nodes).to_dict()
+        except ValueError as e:
+            st.error(str(e))
+            st.stop()
+        c = nm["counts"]
+        st.success(f"Scanned {nm['root']}: {c['folders']} folders, {c['docs']} docs, "
+                   f"{c['edges']} edges ({c['skipped_files']} non-doc files skipped)"
+                   + (" — truncated at max nodes" if nm["truncated"] else ""))
+        components.html(render_html(nm), height=620)
+        import json as _json
+        st.download_button("⬇️ Download nodemap.json",
+                           data=_json.dumps(nm, ensure_ascii=False, indent=2),
+                           file_name="nodemap.json", mime="application/json")
 
 st.divider()
 st.markdown("**Quality Gate**: Tabs visible, stub I/O working, downloads enabled, clear TODOs noted.")
