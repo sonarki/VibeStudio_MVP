@@ -1,0 +1,10 @@
+{
+  "port": 3800,
+  "scanPaths": [
+    "C:/Users/Captain/Documents/Projects"
+  ],
+  "maxCategories": 12,
+  "maxChildren": 8,
+  "keyFileExtensions": [".md", ".txt", ".html", ".js", ".py", ".json", ".pdf", ".docx"],
+  "ignoreNames": ["node_modules", ".git", ".venv", "venv", "__pycache__", "dist", "build", ".next", ".cache"]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "jarbiseo",
+  "version": "2.0.0",
+  "description": "JARBISEO (자비서) — Personal AI assistant / second brain. Phase 2: local Express server.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  }
+}

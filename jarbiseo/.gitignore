@@ -1,0 +1,12 @@
+# Never commit secrets
+.env
+
+# Dependencies
+node_modules/
+
+# Phase 3 long-term memory (conversation logs are personal data)
+memory/
+
+# OS noise
+.DS_Store
+Thumbs.db
