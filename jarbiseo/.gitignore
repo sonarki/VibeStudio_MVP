@@ -10,3 +10,6 @@ memory/
 # OS noise
 .DS_Store
 Thumbs.db
+
+# Auto-updater state
+.last-update
