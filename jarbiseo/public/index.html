@@ -683,6 +683,7 @@ const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 let recognition = null;
 let handsFree = false;      // user toggled always-on listening
 let ttsSpeaking = false;    // TTS active (or about to be) → keep STT paused
+let recActive = false;      // recognition session actually running
 let pendingUtterance = null; // speech captured while a request was in flight
 
 if (SR) {
@@ -690,6 +691,8 @@ if (SR) {
   recognition.lang = 'ko-KR';
   recognition.continuous = true;
   recognition.interimResults = true;
+
+  recognition.onstart = () => { recActive = true; };
 
   recognition.onresult = (e) => {
     let interim = '';
@@ -709,6 +712,7 @@ if (SR) {
 
   // Chrome stops recognition after silence — restart while hands-free is on
   recognition.onend = () => {
+    recActive = false;
     if (handsFree && !ttsSpeaking) restartRecognition();
     updateMicUI();
   };
@@ -724,10 +728,19 @@ if (SR) {
 
 function restartRecognition(delay = 300) {
   setTimeout(() => {
-    if (!handsFree || ttsSpeaking || !recognition) return;
+    if (!handsFree || ttsSpeaking || recActive || !recognition) return;
     try { recognition.start(); } catch (_) { /* already running */ }
   }, delay);
 }
+
+// Keep-alive: Chrome sometimes drops onend/onerror events entirely, which
+// would leave the mic dead until the next click. Re-arm every 2s no matter
+// which event was missed.
+setInterval(() => {
+  if (handsFree && !ttsSpeaking && !recActive && recognition) {
+    try { recognition.start(); } catch (_) {}
+  }
+}, 2000);
 
 function queueUtterance(text) {
   if (state.busy) {
@@ -768,6 +781,10 @@ $('micBtn').addEventListener('click', () => {
 
 const voiceStatus = new Map(); // voiceURI -> 'ok' | 'bad'
 let voices = [];
+const PREFERRED_VOICE = /선히|sunhi/i; // captain's pinned voice
+const TTS_RATE = 1.33; // ~30% faster than the previous 1.02
+let currentUtterance = null; // global ref — Chrome GC kills onend on locals
+let ttsPoll = null;
 
 function refreshVoices() {
   voices = window.speechSynthesis.getVoices();
@@ -789,7 +806,9 @@ function refreshVoices() {
     opt.textContent = `${v.name} (${v.lang})${mark}`;
     sel.appendChild(opt);
   }
+  const preferred = sorted.find((v) => PREFERRED_VOICE.test(v.name) && voiceStatus.get(v.voiceURI) !== 'bad');
   if (prev && [...sel.options].some((o) => o.value === prev)) sel.value = prev;
+  else if (preferred) sel.value = preferred.voiceURI; // pin 선히 by default
   else {
     const ko = sorted.find((v) => v.lang.startsWith('ko') && voiceStatus.get(v.voiceURI) !== 'bad');
     if (ko) sel.value = ko.voiceURI;
@@ -800,6 +819,8 @@ refreshVoices();
 
 // Called whenever TTS finishes (or fails) — reopens the mic in hands-free mode
 function ttsDone() {
+  if (ttsPoll) { clearInterval(ttsPoll); ttsPoll = null; }
+  currentUtterance = null;
   ttsSpeaking = false;
   if (handsFree) restartRecognition(400); // small gap so we don't hear our own tail
 }
@@ -813,10 +834,11 @@ function speak(text) {
   if (handsFree && recognition) { try { recognition.abort(); } catch (_) {} }
 
   const utter = new SpeechSynthesisUtterance(text);
+  currentUtterance = utter;
   const chosen = voices.find((v) => v.voiceURI === $('voiceSelect').value);
   if (chosen) { utter.voice = chosen; utter.lang = chosen.lang; }
   else utter.lang = 'ko-KR';
-  utter.rate = 1.02;
+  utter.rate = TTS_RATE;
 
   // Watchdog: if the voice never starts within 2.5s it is silent/broken —
   // mark it ✕ and retry once with any other Korean voice.
@@ -842,7 +864,8 @@ function speak(text) {
         retried = true;
         $('voiceSelect').value = fallback.voiceURI;
         const retry = new SpeechSynthesisUtterance(text);
-        retry.voice = fallback; retry.lang = fallback.lang; retry.rate = 1.02;
+        currentUtterance = retry;
+        retry.voice = fallback; retry.lang = fallback.lang; retry.rate = TTS_RATE;
         retry.onstart = () => { voiceStatus.set(fallback.voiceURI, 'ok'); refreshVoices(); };
         retry.onend = ttsDone;
         retry.onerror = ttsDone;
@@ -853,6 +876,15 @@ function speak(text) {
   }, 2500);
 
   window.speechSynthesis.speak(utter);
+
+  // Chrome often never fires utterance onend (GC bug) — poll the engine
+  // directly so hands-free listening always resumes after speech stops.
+  if (ttsPoll) clearInterval(ttsPoll);
+  const t0 = Date.now();
+  ttsPoll = setInterval(() => {
+    const s = window.speechSynthesis;
+    if (!s.speaking && !s.pending && Date.now() - t0 > 3000) ttsDone();
+  }, 300);
 }
 
 /* --------------------------------------------------------------------------
