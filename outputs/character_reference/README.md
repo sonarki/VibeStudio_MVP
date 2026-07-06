@@ -3,6 +3,18 @@
 Five-panel photorealistic character reference sheet generated from `source_face.jpg`
 (same identity in every panel: hazel-green eyes, freckles, dark near-black hair).
 
+## v2 — GPT Image 2 (beauty-enhanced)
+
+- **Result (2688×1520 PNG):** https://d8j0ntlcm91z4.cloudfront.net/user_2wX3UthAZov98dVbNmHugZwVghT/hf_20260706_004717_79f11509-2f90-473d-80c8-1980e9296fd0.png
+- **Preview (WebP):** https://d8j0ntlcm91z4.cloudfront.net/user_2wX3UthAZov98dVbNmHugZwVghT/hf_20260706_004717_79f11509-2f90-473d-80c8-1980e9296fd0_min.webp
+- **Generator:** Higgsfield — GPT Image 2 (OpenAI), 16:9, 2K, quality high, identity reference: `source_face.jpg`
+- **Job ID:** `79f11509-2f90-473d-80c8-1980e9296fd0`
+- **Generated:** 2026-07-06
+- Prompt tuned for a more beautiful, idol/beauty-editorial rendering (luminous skin,
+  refined features, radiant smile) while preserving the same identity.
+
+## v1 — Nano Banana Pro
+
 - **Result (2752×1536 PNG):** https://d8j0ntlcm91z4.cloudfront.net/user_2wX3UthAZov98dVbNmHugZwVghT/hf_20260705_164230_72e58527-9f70-4de2-b545-581f6e7c6213.png
 - **Preview (WebP):** https://d8j0ntlcm91z4.cloudfront.net/user_2wX3UthAZov98dVbNmHugZwVghT/hf_20260705_164230_72e58527-9f70-4de2-b545-581f6e7c6213_min.webp
 - **Generator:** Higgsfield — Nano Banana Pro (`nano_banana_2`), 16:9, 2K, identity reference: `source_face.jpg`
