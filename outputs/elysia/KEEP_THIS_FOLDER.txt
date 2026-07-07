@@ -1,0 +1,2 @@
+This folder stores generated files for Elysia video production (엘리시아 영상 제작용).
+Save images, videos, and audio for the Elysia project here.
