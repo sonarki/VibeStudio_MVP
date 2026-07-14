@@ -1,0 +1,117 @@
+{
+  "film": "WEAVRAIN — 90-Second Product Film",
+  "company": "초인류기업",
+  "duration_seconds": 90.0,
+  "structure": "9 blocks x 10.0s",
+  "resolution_master": "1280x720 (upscaled master: see masters)",
+  "voice": {
+    "engine": "seed_audio (Seed Audio 1.0)",
+    "voice_name": "Harrison",
+    "voice_id": "573e5163-59b3-4926-aab1-951ef2985f81",
+    "voice_type": "preset",
+    "settings": {"speech_rate": 0, "loudness_rate": 0, "pitch_rate": 0},
+    "measured_pace_wpm": 125
+  },
+  "style_frames": {
+    "A_fragmentation_anchor": {
+      "job_id": "fc282aa1-d73b-4a77-b570-fb36a9aa88fe",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_2wX3UthAZov98dVbNmHugZwVghT/hf_20260714_044622_fc282aa1-d73b-4a77-b570-fb36a9aa88fe.png"
+    },
+    "B_memory_threshold": {
+      "job_id": "76ab9f4b-d8dc-4ff1-8d67-313c4e0ed6ec",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_2wX3UthAZov98dVbNmHugZwVghT/hf_20260714_044918_76ab9f4b-d8dc-4ff1-8d67-313c4e0ed6ec.png"
+    },
+    "C_sovereignty_sentinel": {
+      "job_id": "b5d43e7b-023c-41ee-851c-b078865cf1a5",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_2wX3UthAZov98dVbNmHugZwVghT/hf_20260714_044925_b5d43e7b-023c-41ee-851c-b078865cf1a5.png"
+    }
+  },
+  "blocks": [
+    {
+      "block": 1, "scene": "Pieces left behind",
+      "frame_job": "fc282aa1-d73b-4a77-b570-fb36a9aa88fe",
+      "clip_job": "085a6fff-df04-4646-9e1f-ef11dbb38df1",
+      "clip_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2wX3UthAZov98dVbNmHugZwVghT/hf_20260714_045336_085a6fff-df04-4646-9e1f-ef11dbb38df1.mp4",
+      "voice_job": "131d99c8-d289-4031-8f13-5fa8ba48d213", "voice_duration_sec": 7.195
+    },
+    {
+      "block": 2, "scene": "Speed is not continuity",
+      "frame_job": "a380dc9c-460a-40c3-a5e9-b390a0008eb8",
+      "clip_job": "e6dfd793-29de-4d2c-b461-b16f2cbbe421",
+      "clip_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2wX3UthAZov98dVbNmHugZwVghT/hf_20260714_045404_e6dfd793-29de-4d2c-b461-b16f2cbbe421.mp4",
+      "voice_job": "ea23d646-f4a9-4cf4-b627-5598298e65ee", "voice_duration_sec": 7.02
+    },
+    {
+      "block": 3, "scene": "Product reveal",
+      "frame_job": "a3b86675-c050-49c6-959f-2d6706bb9427",
+      "clip_job": "f8615d58-f30d-489c-8872-09f32c357204",
+      "clip_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2wX3UthAZov98dVbNmHugZwVghT/hf_20260714_045420_f8615d58-f30d-489c-8872-09f32c357204.mp4",
+      "voice_job": "0aec54e3-a337-4f8b-b667-53646e59ac45", "voice_duration_sec": 5.63
+    },
+    {
+      "block": 4, "scene": "Living second-brain structure",
+      "frame_job": "bfa80333-8360-486c-af1f-8f95a5869167",
+      "clip_job": "047ee16e-8128-462e-9e6f-4f798efe8f2a",
+      "clip_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2wX3UthAZov98dVbNmHugZwVghT/hf_20260714_045437_047ee16e-8128-462e-9e6f-4f798efe8f2a.mp4",
+      "voice_job": "518f20da-385d-4102-879c-d287efe6700e", "voice_duration_sec": 9.24
+    },
+    {
+      "block": 5, "scene": "The first sentence",
+      "frame_job": "76ab9f4b-d8dc-4ff1-8d67-313c4e0ed6ec",
+      "clip_job": "e25efd43-cdfb-45e4-9209-0d0a24f05060",
+      "clip_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2wX3UthAZov98dVbNmHugZwVghT/hf_20260714_045452_e25efd43-cdfb-45e4-9209-0d0a24f05060.mp4",
+      "voice_job": "d7cd64ca-8c7c-4b37-a3d1-9c7b87f6cdac", "voice_duration_sec": 4.845
+    },
+    {
+      "block": 6, "scene": "Practical value",
+      "frame_job": "981df63a-18af-4f19-a240-9d341c4f5a84",
+      "clip_job": "fb6047d5-7711-49f9-a7f0-51e10f0c01b1",
+      "clip_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2wX3UthAZov98dVbNmHugZwVghT/hf_20260714_045508_fb6047d5-7711-49f9-a7f0-51e10f0c01b1.mp4",
+      "voice_job": "5f86fcb8-3ad2-4cf4-8b81-90c3dc6e0cfb", "voice_duration_sec": 8.095
+    },
+    {
+      "block": 7, "scene": "Discernment (FACT / INFERENCE / SUGGESTION)",
+      "frame_job": "23123593-17aa-420b-b78c-ec95c0120e71",
+      "clip_job": "0fb1d12a-0c53-4cb8-ba32-cb55170dfde9",
+      "clip_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2wX3UthAZov98dVbNmHugZwVghT/hf_20260714_045527_0fb1d12a-0c53-4cb8-ba32-cb55170dfde9.mp4",
+      "voice_job": "555c1300-63ce-49d2-9e45-2026b8872a1a", "voice_duration_sec": 7.72
+    },
+    {
+      "block": 8, "scene": "Sovereignty Sentinel",
+      "frame_job": "b5d43e7b-023c-41ee-851c-b078865cf1a5",
+      "clip_job": "5def3134-0e2c-44d9-a125-47e222f5e14e",
+      "clip_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2wX3UthAZov98dVbNmHugZwVghT/hf_20260714_045543_5def3134-0e2c-44d9-a125-47e222f5e14e.mp4",
+      "voice_job": "6fa3b070-b2a9-47b5-bed3-4d588ae5ed8f", "voice_duration_sec": 6.445
+    },
+    {
+      "block": 9, "scene": "Human authority + end card",
+      "frame_job": "2dc22eb1-cca0-4d6b-aefe-2ba9eda3c013",
+      "clip_job": "b7b25ea8-6cfd-4f80-ae2b-e6aa602c1f54",
+      "clip_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2wX3UthAZov98dVbNmHugZwVghT/hf_20260714_045607_b7b25ea8-6cfd-4f80-ae2b-e6aa602c1f54.mp4",
+      "voice_job": "b6ebadd8-7200-49c0-9e09-278f879945d9", "voice_duration_sec": 9.14
+    }
+  ],
+  "masters": {
+    "clean_master_720p": {
+      "job_id": "f709e320-abcb-47d2-a3d1-78b735e360e7",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_2wX3UthAZov98dVbNmHugZwVghT/hf_20260714_045848_f709e320-abcb-47d2-a3d1-78b735e360e7.mp4"
+    },
+    "burned_subtitle_master_720p": {
+      "job_id": "4c7d8d96-ade4-4141-96de-af12bd09f94e",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_2wX3UthAZov98dVbNmHugZwVghT/hf_20260714_045908_4c7d8d96-ade4-4141-96de-af12bd09f94e.mp4"
+    },
+    "upscaled_clean_master_2k_24fps": {
+      "job_id": "f119f1b0-a5f8-4920-a7cc-406cdda5e9b6",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_2wX3UthAZov98dVbNmHugZwVghT/hf_20260714_050048_f119f1b0-a5f8-4920-a7cc-406cdda5e9b6.mp4"
+    }
+  },
+  "qa": {
+    "full_film_scene_analysis_id": "5c212398-8da3-4a31-acbb-3ff338b27be4",
+    "block9_clip_duration_probe_id": "3f169286-41da-4fc2-acbe-046807f36504"
+  },
+  "voice_tests": [
+    {"voice": "Sterling", "job": "a9ea32f0-e74b-40a4-bca3-6f76e06151b9", "duration_sec": 15.51},
+    {"voice": "Harrison", "job": "047500c8-71ec-4307-bd7d-8822e98b5a96", "duration_sec": 12.027},
+    {"voice": "Nora", "job": "f65e86ac-d2ec-4832-bbd6-51c3713e23e7", "duration_sec": 17.045}
+  ]
+}
