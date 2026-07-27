@@ -1,0 +1,75 @@
+# 하루자동화 — 파일 취합·정제 설정
+#
+# 이 파일만 고치시면 됩니다. 코드는 열지 않으셔도 됩니다.
+# 이 파일을 config.yaml 이라는 이름으로 복사한 뒤 값을 채워주세요.
+
+source:
+  # 원본 파일들이 들어 있는 폴더
+  folder: "C:/Users/사용자/Desktop/주문서"
+
+  # 그중 어떤 파일을 읽을지 (*.xlsx = 엑셀 전부, *.csv = CSV 전부)
+  pattern: "*.xlsx"
+
+  # 엑셀에서 몇 번째 시트를 읽을지 (0 = 첫 번째 시트, 또는 "시트이름")
+  sheet_name: 0
+
+  # 제목 줄이 몇 번째 행인지 (엑셀에서 보이는 그대로의 행 번호)
+  header_row: 1
+
+  # CSV 인코딩 (한글이 깨지면 "cp949" 로 바꿔보세요)
+  encoding: "utf-8-sig"
+
+  # 결과에 "이 행이 어느 파일에서 왔는지" 열을 추가할지
+  add_source_column: true
+
+clean:
+  # 앞뒤 공백 제거
+  strip_whitespace: true
+
+  # 열 이름 바꾸기  (원본이름: 바꿀이름)
+  rename_columns:
+    "주문번호": "주문번호"
+    "수취인명": "받는분"
+
+  # 이 열이 없으면 즉시 중단합니다 (형식이 바뀐 걸 조용히 넘기지 않기 위함)
+  required_columns:
+    - "주문번호"
+
+  # 이 열이 비어 있는 행은 제외
+  drop_if_empty:
+    - "주문번호"
+
+  # 숫자로 취급할 열 (쉼표·원 표시를 자동으로 떼어냅니다)
+  numeric_columns:
+    - "결제금액"
+
+  # 날짜로 취급할 열
+  date_columns:
+    - "주문일시"
+
+  # 중복 판단 기준 (같은 값이면 마지막 행만 남깁니다)
+  dedupe_by:
+    - "주문번호"
+
+  # 정렬 기준
+  sort_by:
+    - "주문일시"
+
+# 요약 시트 (필요 없으면 이 블록을 통째로 지우세요)
+summary:
+  group_by: "출처파일"
+  sum_column: "결제금액"
+
+output:
+  folder: "C:/Users/사용자/Desktop/취합결과"
+  filename_prefix: "주문취합"
+  timestamp_format: "%Y%m%d_%H%M"
+
+# 실행 결과를 메일로 받고 싶으실 때만 채우세요 (비워두면 메일을 보내지 않습니다)
+notify:
+  email:
+    to: ""
+    from: ""
+    password: ""      # Gmail은 앱 비밀번호를 사용하세요
+    host: "smtp.gmail.com"
+    port: 587

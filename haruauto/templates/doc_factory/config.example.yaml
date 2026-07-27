@@ -1,0 +1,43 @@
+# 하루자동화 — 문서 자동 생성 설정
+#
+# 이 파일만 고치시면 됩니다. 코드는 열지 않으셔도 됩니다.
+# 이 파일을 config.yaml 이라는 이름으로 복사한 뒤 값을 채워주세요.
+
+data:
+  # 문서로 만들 데이터가 들어 있는 파일 (한 행 = 문서 한 장)
+  file: "C:/Users/사용자/Desktop/정산데이터.xlsx"
+  sheet_name: 0
+  encoding: "utf-8-sig"      # CSV일 때만 사용
+
+template:
+  # 서식 파일. 안에 {{열이름}} 이라고 써두면 그 자리에 값이 들어갑니다.
+  file: "./template.example.txt"
+
+  # 값을 보기 좋게 바꿀 열
+  #   money = 1,234,000 처럼 쉼표 넣기
+  #   date  = 2026-07-27 형태로 통일
+  formats:
+    "정산금액": money
+    "공급가액": money
+    "부가세": money
+    "정산일": date
+
+output:
+  folder: "C:/Users/사용자/Desktop/정산서"
+
+  # 파일 이름도 {{열이름}} 을 쓸 수 있습니다
+  filename: "{{정산일}}_{{거래처명}}_정산서"
+  extension: ".txt"
+
+  # 같은 이름의 파일이 이미 있을 때 덮어쓸지
+  # false 로 두면 기존 파일을 보호하고 건너뜁니다 (권장)
+  overwrite: false
+
+# 실행 결과를 메일로 받고 싶으실 때만 채우세요
+notify:
+  email:
+    to: ""
+    from: ""
+    password: ""
+    host: "smtp.gmail.com"
+    port: 587
