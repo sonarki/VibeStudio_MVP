@@ -23,6 +23,7 @@ HookForge와 **완전히 분리된 신규 사업**입니다. 공유 자산은 Gu
 | [`04_SALES_SCRIPT.md`](04_SALES_SCRIPT.md) | 진단 통화 → 클로징 스크립트 + 반론 대응 |
 | [`05_DELIVERY_PLAYBOOK.md`](05_DELIVERY_PLAYBOOK.md) | 24시간 납품 실행 매뉴얼 |
 | [`06_CAPTAIN_CHECKLIST.md`](06_CAPTAIN_CHECKLIST.md) | 캡틴 액션 체크리스트 |
+| [`07_CONTENT_ENGINE.md`](07_CONTENT_ENGINE.md) | 무얼굴 숏폼 배포 엔진 (아웃라이어 12건 실측 기반) · **후순위** |
 | [`templates/`](templates/) | 재사용 자동화 뼈대 (동작 확인 완료) |
 
 ---
@@ -38,6 +39,10 @@ HookForge와 **완전히 분리된 신규 사업**입니다. 공유 자산은 Gu
 
 **숫자**: SPRINT ₩4,900,000 × 2건 = ₩9,800,000.
 **필요한 건 200명이 아니라 2명입니다.**
+
+**그 다음**: 빌린 배포(마켓플레이스)는 심사 한 번에 사라집니다.
+그래서 우리 소유의 채널을 하나 만들어 둡니다 → [`07_CONTENT_ENGINE.md`](07_CONTENT_ENGINE.md).
+단 **오늘의 목표와는 무관합니다.** 공고 지원이 끝난 뒤에 여는 문서입니다.
 
 ---
 
